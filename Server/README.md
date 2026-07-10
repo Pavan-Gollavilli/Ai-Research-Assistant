@@ -1,91 +1,113 @@
-# AI Research Assistant - Backend
+#  AI Research Assistant - Backend
 
-A Multi-Agent AI Research Assistant backend built using **Node.js**, **Express.js**, **MongoDB**, and **Google Gemini**. The application performs automated research by collecting information from web search, Google Books, and AI-generated summaries, reports, and citations.
-
----
-
-## Features
-
-- Web Search using Serper API
-- Book Search using Google Books API
-- AI-powered Summary Generation using Google Gemini
-- AI-powered Keyword Extraction
-- AI-powered Research Report Generation
-- Citation Generation
-- MongoDB Database Integration
-- RESTful APIs
-- Modular Service Architecture
-- Error Handling Middleware
+A scalable Node.js backend for an AI-powered Research Assistant that automatically gathers information from the web and books, generates structured research reports using Google Gemini AI, and stores everything securely with Firebase Authentication and MongoDB.
 
 ---
 
-## Tech Stack
+# Features
+
+- 🔐 Firebase Authentication
+  - Email & Password Login
+  - Google Login Ready
+  - Firebase Admin Token Verification
+
+- 👤 User Management
+  - Sync Firebase Users to MongoDB
+  - View Profile
+  - Update Profile
+  - Delete Account
+
+- 🤖 AI Research Pipeline
+  - Web Search (Serper API)
+  - Google Books Search
+  - AI Research Generation (Gemini 2.5 Flash)
+  - Automatic Report Generation
+  - Keywords Extraction
+  - Executive Summary
+  - Citations Generation
+
+- 📚 Research Management
+  - Create Research
+  - View All Research
+  - Get Research by ID
+  - Delete Research
+  - Research Statistics
+
+- 🗄 MongoDB Database
+  - User Collection
+  - Research Collection
+
+---
+
+# Tech Stack
 
 - Node.js
 - Express.js
 - MongoDB
 - Mongoose
+- Firebase Authentication
+- Firebase Admin SDK
 - Google Gemini API
 - Serper API
 - Google Books API
-- Axios
-- Dotenv
 
 ---
 
-## Project Structure
+# Project Structure
 
 ```
-Server/
+Server
 │
-├── config/
-│   └── db.js
+├── config
+│   ├── db.js
+│   └── firebaseAdmin.js
 │
-├── controllers/
+├── controllers
+│   ├── authController.js
 │   └── researchController.js
 │
-├── middleware/
-│   └── errorHandler.js
+├── middleware
+│   ├── verifyFirebaseToken.js
+│   └── loadUser.js
 │
-├── models/
+├── models
+│   ├── User.js
 │   └── Research.js
 │
-├── routes/
+├── routes
+│   ├── authRoutes.js
 │   └── researchRoutes.js
 │
-├── services/
-│   ├── serperService.js
+├── services
 │   ├── googleBooksService.js
-│   ├── openAIService.js
-│   ├── summaryService.js
-│   ├── keywordService.js
-│   ├── reportService.js
-│   ├── citationService.js
+│   ├── serperService.js
+│   ├── llmService.js
+│   ├── researchAgent.js
 │   └── researchPipeline.js
 │
-├── utils/
-│   └── prompts.js
+├── prompts
+│   └── prompt.js
 │
-├── .env
-├── package.json
+├── utils
+│
 ├── server.js
-└── README.md
+└── package.json
 ```
 
 ---
 
-## Installation
+# Installation
 
 Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/YOUR_USERNAME/AI-Research-Assistant.git
 ```
 
-Move to the backend directory
+Go to backend
 
 ```bash
-cd Server
+cd AI-Research-Assistant/Server
 ```
 
 Install dependencies
@@ -96,27 +118,39 @@ npm install
 
 ---
 
-## Environment Variables
+# Environment Variables
 
-Create a `.env` file in the root directory.
+Create a `.env` file.
 
 ```env
 PORT=5000
 
-MONGODB_URI=your_mongodb_connection_string
+MONGO_URI=YOUR_MONGODB_URI
 
-DB_NAME=research_assistant
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
 
-SERPER_API_KEY=your_serper_api_key
+SERPER_API_KEY=YOUR_SERPER_API_KEY
 
-GOOGLE_BOOKS_API_KEY=your_google_books_api_key
-
-GEMINI_API_KEY=your_gemini_api_key
+GOOGLE_BOOKS_API_KEY=YOUR_GOOGLE_BOOKS_API_KEY
 ```
 
 ---
 
-## Start Server
+# Firebase Setup
+
+Create
+
+```
+Server/keys/serviceAccountKey.json
+```
+
+Download your Firebase Admin SDK JSON and place it inside the **keys** folder.
+
+> Do **NOT** commit this file to GitHub.
+
+---
+
+# Run the Server
 
 Development
 
@@ -130,7 +164,7 @@ Production
 npm start
 ```
 
-Server will run at
+Server
 
 ```
 http://localhost:5000
@@ -138,247 +172,145 @@ http://localhost:5000
 
 ---
 
+# Authentication Flow
+
+```
+Firebase Login
+        │
+        ▼
+Firebase ID Token
+        │
+        ▼
+POST /api/auth/sync-user
+        │
+        ▼
+MongoDB User Created
+        │
+        ▼
+Protected APIs
+```
+
+---
+
 # API Endpoints
 
-## Home
+## Authentication
+
+### Sync User
 
 ```
-GET /
+POST /api/auth/sync-user
 ```
 
-Response
-
-```json
-{
-  "success": true,
-  "message": "AI Research Assistant API"
-}
-```
-
----
-
-## Health Check
+### Get Profile
 
 ```
-GET /health
+GET /api/auth/profile
 ```
 
-Response
+### Update Profile
 
-```json
-{
-  "success": true,
-  "status": "OK"
-}
+```
+PUT /api/auth/profile
+```
+
+### Delete Profile
+
+```
+DELETE /api/auth/profile
 ```
 
 ---
 
-## Create Research
+## Research
+
+### Create Research
 
 ```
 POST /api/research
 ```
 
-Request Body
-
-```json
-{
-  "title": "AI in Healthcare",
-  "topic": "Artificial Intelligence in Healthcare"
-}
-```
-
----
-
-## Get All Research
+### Get All Research
 
 ```
 GET /api/research
 ```
 
----
-
-## Get Research by ID
+### Get Research By ID
 
 ```
 GET /api/research/:id
 ```
 
----
-
-## Delete Research
+### Delete Research
 
 ```
 DELETE /api/research/:id
 ```
 
----
-
-# Backend Workflow
+### Research Statistics
 
 ```
-Client
-    │
-    ▼
-Express Routes
-    │
-    ▼
-Research Controller
-    │
-    ▼
-Research Pipeline
-    │
-    ├──────────────► Serper API
-    │
-    ├──────────────► Google Books API
-    │
-    ├──────────────► Gemini Summary Agent
-    │
-    ├──────────────► Gemini Keyword Agent
-    │
-    ├──────────────► Gemini Report Agent
-    │
-    └──────────────► Citation Agent
-    │
-    ▼
-MongoDB
-    │
-    ▼
-Response
+GET /api/research/stats
 ```
 
 ---
 
-# Multi-Agent Workflow
+# AI Research Workflow
 
 ```
-User Query
+User Request
+      │
+      ▼
+Serper Search
+      │
+      ▼
+Google Books Search
+      │
+      ▼
+Gemini 2.5 Flash
+      │
+      ▼
+Generate
 
-↓
+• Executive Summary
+• Introduction
+• Technologies
+• Applications
+• Advantages
+• Challenges
+• Future Scope
+• Keywords
+• Citations
 
-Research Controller
-
-↓
-
-Research Pipeline
-
-↓
-
-Web Search Agent
-
-↓
-
-Book Search Agent
-
-↓
-
-Summary Agent
-
-↓
-
-Keyword Agent
-
-↓
-
-Report Agent
-
-↓
-
-Citation Agent
-
-↓
-
-MongoDB
-
-↓
-
-REST API Response
+      │
+      ▼
+Store in MongoDB
 ```
 
 ---
 
-# Database Schema
+# Security
 
-Research
-
-```
-title
-topic
-status
-summary
-report
-keywords
-articles
-books
-sources
-searchMetadata
-generatedBy
-createdAt
-updatedAt
-```
-
----
-
-# Services
-
-## Serper Service
-
-- Search latest web articles
-- Return article metadata
-
----
-
-## Google Books Service
-
-- Search books
-- Return authors, publisher, description, thumbnail
-
----
-
-## Gemini Service
-
-- Generate summary
-- Extract keywords
-- Generate professional research report
-
----
-
-## Citation Service
-
-Generate formatted citations for:
-
-- Articles
-- Books
-- Websites
+- Firebase Authentication
+- Firebase Admin Token Verification
+- Protected API Routes
+- MongoDB User Isolation
+- Environment Variables
+- Service Account Ignored via `.gitignore`
 
 ---
 
 # Future Improvements
 
-- User Authentication (JWT)
-- PDF Upload & Analysis
-- Research Export (PDF)
-- Research History
-- User Dashboard
+- React Frontend
+- Dashboard Analytics
+- Research Search & Filters
+- Pagination
+- Export Research to PDF
+- Research Bookmarks
 - AI Chat with Research
-- RAG using Vector Database
-- Multi-user Support
-- Docker Deployment
-- CI/CD Pipeline
-
----
-
-# Dependencies
-
-```
-express
-mongoose
-cors
-dotenv
-axios
-@google/genai
-```
+- Multi-language Support
 
 ---
 
@@ -386,8 +318,14 @@ axios
 
 **Pavan Gollavilli**
 
-AI & Machine Learning Student
+B.Tech CSE (AI & ML)
 
-MERN Stack Developer
+AI & Full Stack Developer
 
-Generative AI Enthusiast
+GitHub: https://github.com/Pavan-Gollavilli
+
+---
+
+# License
+
+This project is licensed under the MIT License.
