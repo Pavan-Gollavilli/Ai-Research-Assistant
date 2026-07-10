@@ -1,39 +1,69 @@
 const axios = require("axios");
 
+const GOOGLE_BOOKS_API =
+  "https://www.googleapis.com/books/v1/volumes";
+
+/**
+ * Search books from Google Books API
+ * @param {string} query
+ * @returns {Promise<Array>}
+ */
 const searchBooks = async (query) => {
   try {
-    const response = await axios.get(
-      "https://www.googleapis.com/books/v1/volumes",
-      {
-        params: {
-          q: query,
-          maxResults: 5,
-          key: process.env.GOOGLE_BOOKS_API_KEY,
-        },
-      }
-    );
+    const response = await axios.get(GOOGLE_BOOKS_API, {
+      params: {
+        q: query,
+        maxResults: 5,
+        key: process.env.GOOGLE_BOOKS_API_KEY,
+      },
+    });
 
-    const books = response.data.items || [];
+    const items = response.data.items || [];
 
-    return books.map((book) => ({
-      title: book.volumeInfo.title || "",
+    const uniqueBooks = [];
 
-      authors: book.volumeInfo.authors || [],
+    const titles = new Set();
 
-      publisher: book.volumeInfo.publisher || "",
+    items.forEach((item) => {
+      const info = item.volumeInfo;
 
-      publishedDate: book.volumeInfo.publishedDate || "",
+      if (!info) return;
 
-      description: book.volumeInfo.description || "",
+      if (titles.has(info.title)) return;
 
-      thumbnail:
-        book.volumeInfo.imageLinks?.thumbnail || "",
+      titles.add(info.title);
 
-      infoLink: book.volumeInfo.infoLink || "",
-    }));
+      uniqueBooks.push({
+        title: info.title || "",
+
+        authors: info.authors || [],
+
+        publisher: info.publisher || "",
+
+        publishedDate: info.publishedDate || "",
+
+        description: info.description || "",
+
+        thumbnail:
+          info.imageLinks?.thumbnail || "",
+
+        infoLink: info.infoLink || "",
+      });
+    });
+
+    return uniqueBooks;
   } catch (error) {
-    console.error(error.response?.data || error.message);
-    throw new Error("Unable to fetch books.");
+    console.error("\n==============================");
+    console.error("❌ Google Books API Error");
+    console.error("==============================");
+
+    if (error.response) {
+      console.error(error.response.data);
+    } else {
+      console.error(error.message);
+    }
+
+    throw new Error("Failed to fetch books.");
   }
 };
 

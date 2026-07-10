@@ -1,11 +1,68 @@
 const Research = require("../models/Research");
 const { runResearchPipeline } = require("../services/researchPipeline");
 
-// ======================================================
-// @desc    Get all research
-// @route   GET /api/research
-// ======================================================
-const listResearch = async (req, res, next) => {
+/**
+ * ===========================================
+ * @desc    Create Research
+ * @route   POST /api/research
+ * @access  Public
+ * ===========================================
+ */
+
+const createResearch = async (req, res, next) => {
+  try {
+    const {
+      title,
+      topic,
+      category,
+      language,
+      difficulty,
+      citationStyle,
+    } = req.body;
+
+    // ============================
+    // Validation
+    // ============================
+
+    if (!title || !topic) {
+      return res.status(400).json({
+        success: false,
+        message: "Title and Topic are required.",
+      });
+    }
+
+    // ============================
+    // Run AI Pipeline
+    // ============================
+
+    const research = await runResearchPipeline({
+      title,
+      topic,
+      category,
+      language,
+      difficulty,
+      citationStyle,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Research completed successfully.",
+      data: research,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * ===========================================
+ * @desc    Get All Research
+ * @route   GET /api/research
+ * @access  Public
+ * ===========================================
+ */
+
+const getAllResearch = async (req, res, next) => {
   try {
     const research = await Research.find().sort({
       createdAt: -1,
@@ -21,10 +78,14 @@ const listResearch = async (req, res, next) => {
   }
 };
 
-// ======================================================
-// @desc    Get research by ID
-// @route   GET /api/research/:id
-// ======================================================
+/**
+ * ===========================================
+ * @desc    Get Research By ID
+ * @route   GET /api/research/:id
+ * @access  Public
+ * ===========================================
+ */
+
 const getResearchById = async (req, res, next) => {
   try {
     const research = await Research.findById(req.params.id);
@@ -32,7 +93,7 @@ const getResearchById = async (req, res, next) => {
     if (!research) {
       return res.status(404).json({
         success: false,
-        message: "Research not found",
+        message: "Research not found.",
       });
     }
 
@@ -45,62 +106,14 @@ const getResearchById = async (req, res, next) => {
   }
 };
 
-// ======================================================
-// @desc    Create Research
-// @route   POST /api/research
-// ======================================================
-const createResearch = async (req, res, next) => {
-  try {
-    const { title, topic } = req.body;
+/**
+ * ===========================================
+ * @desc    Delete Research
+ * @route   DELETE /api/research/:id
+ * @access  Public
+ * ===========================================
+ */
 
-    if (!title || !topic) {
-      return res.status(400).json({
-        success: false,
-        message: "Title and Topic are required",
-      });
-    }
-
-    // Run the complete research pipeline
-    const result = await runResearchPipeline(topic);
-
-    // Save to MongoDB
-    const research = await Research.create({
-      title,
-      topic,
-
-      status: result.status,
-
-      keywords: result.keywords,
-
-      summary: result.summary,
-
-      report: result.report,
-
-      articles: result.articles,
-
-      books: result.books,
-
-      sources: result.sources,
-
-      searchMetadata: result.searchMetadata,
-
-      generatedBy: result.generatedBy,
-    });
-
-    res.status(201).json({
-      success: true,
-      message: "Research completed successfully",
-      data: research,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// ======================================================
-// @desc    Delete Research
-// @route   DELETE /api/research/:id
-// ======================================================
 const deleteResearch = async (req, res, next) => {
   try {
     const research = await Research.findById(req.params.id);
@@ -108,7 +121,7 @@ const deleteResearch = async (req, res, next) => {
     if (!research) {
       return res.status(404).json({
         success: false,
-        message: "Research not found",
+        message: "Research not found.",
       });
     }
 
@@ -116,7 +129,45 @@ const deleteResearch = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Research deleted successfully",
+      message: "Research deleted successfully.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * ===========================================
+ * @desc    Get Research Statistics
+ * @route   GET /api/research/stats
+ * @access  Public
+ * ===========================================
+ */
+
+const getResearchStats = async (req, res, next) => {
+  try {
+    const totalResearch = await Research.countDocuments();
+
+    const completed = await Research.countDocuments({
+      status: "completed",
+    });
+
+    const processing = await Research.countDocuments({
+      status: "processing",
+    });
+
+    const failed = await Research.countDocuments({
+      status: "failed",
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalResearch,
+        completed,
+        processing,
+        failed,
+      },
     });
   } catch (error) {
     next(error);
@@ -124,8 +175,9 @@ const deleteResearch = async (req, res, next) => {
 };
 
 module.exports = {
-  listResearch,
-  getResearchById,
   createResearch,
+  getAllResearch,
+  getResearchById,
   deleteResearch,
+  getResearchStats,
 };
