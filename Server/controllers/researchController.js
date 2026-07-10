@@ -5,10 +5,9 @@ const { runResearchPipeline } = require("../services/researchPipeline");
  * ===========================================
  * @desc    Create Research
  * @route   POST /api/research
- * @access  Public
+ * @access  Private
  * ===========================================
  */
-
 const createResearch = async (req, res, next) => {
   try {
     const {
@@ -36,6 +35,8 @@ const createResearch = async (req, res, next) => {
     // ============================
 
     const research = await runResearchPipeline({
+      userId: req.user._id,
+
       title,
       topic,
       category,
@@ -58,13 +59,14 @@ const createResearch = async (req, res, next) => {
  * ===========================================
  * @desc    Get All Research
  * @route   GET /api/research
- * @access  Public
+ * @access  Private
  * ===========================================
  */
-
 const getAllResearch = async (req, res, next) => {
   try {
-    const research = await Research.find().sort({
+    const research = await Research.find({
+      user: req.user._id,
+    }).sort({
       createdAt: -1,
     });
 
@@ -82,13 +84,15 @@ const getAllResearch = async (req, res, next) => {
  * ===========================================
  * @desc    Get Research By ID
  * @route   GET /api/research/:id
- * @access  Public
+ * @access  Private
  * ===========================================
  */
-
 const getResearchById = async (req, res, next) => {
   try {
-    const research = await Research.findById(req.params.id);
+    const research = await Research.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+    });
 
     if (!research) {
       return res.status(404).json({
@@ -110,13 +114,15 @@ const getResearchById = async (req, res, next) => {
  * ===========================================
  * @desc    Delete Research
  * @route   DELETE /api/research/:id
- * @access  Public
+ * @access  Private
  * ===========================================
  */
-
 const deleteResearch = async (req, res, next) => {
   try {
-    const research = await Research.findById(req.params.id);
+    const research = await Research.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+    });
 
     if (!research) {
       return res.status(404).json({
@@ -140,23 +146,27 @@ const deleteResearch = async (req, res, next) => {
  * ===========================================
  * @desc    Get Research Statistics
  * @route   GET /api/research/stats
- * @access  Public
+ * @access  Private
  * ===========================================
  */
-
 const getResearchStats = async (req, res, next) => {
   try {
-    const totalResearch = await Research.countDocuments();
+    const totalResearch = await Research.countDocuments({
+      user: req.user._id,
+    });
 
     const completed = await Research.countDocuments({
+      user: req.user._id,
       status: "completed",
     });
 
     const processing = await Research.countDocuments({
+      user: req.user._id,
       status: "processing",
     });
 
     const failed = await Research.countDocuments({
+      user: req.user._id,
       status: "failed",
     });
 

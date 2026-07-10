@@ -1,10 +1,4 @@
-# Environment files
-.env
-**/.env
-
-# Dependencies
 node_modules/
-**/node_modules/
+.env
 
-# Logs
-*.log
+Server/keys/serviceAccountKey.json

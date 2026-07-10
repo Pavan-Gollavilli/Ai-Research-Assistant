@@ -236,6 +236,13 @@ const researchSchema = new mongoose.Schema(
       trim: true,
     },
 
+    
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+
     category: {
       type: String,
       default: "General",
@@ -362,6 +369,10 @@ const researchSchema = new mongoose.Schema(
 researchSchema.index({
   title: "text",
   topic: "text",
+});
+
+researchSchema.index({
+  user: 1,
 });
 
 researchSchema.index({

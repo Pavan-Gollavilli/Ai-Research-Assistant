@@ -6,6 +6,7 @@ const cors = require("cors");
 
 const connectDB = require("./config/db");
 
+const authRoutes = require("./routes/authRoutes");
 const researchRoutes = require("./routes/researchRoutes");
 const {
   notFound,
@@ -34,6 +35,7 @@ app.get("/health", (req, res) => {
   });
 });
 
+app.use("/api/auth", authRoutes);
 app.use("/api/research", researchRoutes);
 
 app.use(notFound);

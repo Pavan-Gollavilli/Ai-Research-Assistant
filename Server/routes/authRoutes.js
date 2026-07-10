@@ -6,57 +6,47 @@ const verifyFirebaseToken = require("../middleware/verifyFirebaseToken");
 const loadUser = require("../middleware/loadUser");
 
 const {
-  createResearch,
-  getAllResearch,
-  getResearchById,
-  deleteResearch,
-  getResearchStats,
-} = require("../controllers/researchController");
+  syncUser,
+  getProfile,
+  updateProfile,
+  deleteAccount,
+} = require("../controllers/authController");
 
 /**
  * ===========================================
- * Research Routes
+ * Authentication Routes
  * ===========================================
  */
 
-// Create Research
+// Sync Firebase User (First Login)
 router.post(
-  "/",
+  "/sync-user",
   verifyFirebaseToken,
-  loadUser,
-  createResearch
+  syncUser
 );
 
-// Get All Research
+// Get Current User
 router.get(
-  "/",
+  "/profile",
   verifyFirebaseToken,
   loadUser,
-  getAllResearch
+  getProfile
 );
 
-// Research Statistics
-router.get(
-  "/stats",
+// Update Profile
+router.put(
+  "/profile",
   verifyFirebaseToken,
   loadUser,
-  getResearchStats
+  updateProfile
 );
 
-// Get Research By ID
-router.get(
-  "/:id",
-  verifyFirebaseToken,
-  loadUser,
-  getResearchById
-);
-
-// Delete Research
+// Delete Account
 router.delete(
-  "/:id",
+  "/profile",
   verifyFirebaseToken,
   loadUser,
-  deleteResearch
+  deleteAccount
 );
 
 module.exports = router;

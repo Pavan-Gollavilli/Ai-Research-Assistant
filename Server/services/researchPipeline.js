@@ -8,9 +8,22 @@ const { generateResearch } = require("./researchAgent");
  * ======================================================
  * AI Research Pipeline
  * ======================================================
+ *
+ * Flow:
+ * User
+ *   ↓
+ * Web Search Agent
+ *   ↓
+ * Book Search Agent
+ *   ↓
+ * AI Research Agent
+ *   ↓
+ * Save to MongoDB
+ * ======================================================
  */
 
 const runResearchPipeline = async ({
+  userId,
   title,
   topic,
   category = "General",
@@ -25,10 +38,12 @@ const runResearchPipeline = async ({
     console.log("🚀 AI RESEARCH PIPELINE STARTED");
     console.log("========================================");
 
+    console.log(`👤 User ID    : ${userId}`);
     console.log(`📌 Topic      : ${topic}`);
     console.log(`📂 Category   : ${category}`);
     console.log(`🌐 Language   : ${language}`);
     console.log(`📚 Difficulty : ${difficulty}`);
+    console.log(`📖 Citation   : ${citationStyle}`);
 
     // ======================================
     // STEP 1 : Search Articles
@@ -38,9 +53,12 @@ const runResearchPipeline = async ({
 
     const searchStart = Date.now();
 
-    const articles = await searchWeb(topic);
+    const allArticles = await searchWeb(topic);
 
-    console.log(`✅ Articles : ${articles.length}`);
+    // Limit to Top 5
+    const articles = allArticles.slice(0, 5);
+
+    console.log(`✅ Articles Found : ${articles.length}`);
 
     // ======================================
     // STEP 2 : Search Books
@@ -48,11 +66,18 @@ const runResearchPipeline = async ({
 
     console.log("\n📚 Searching Books...");
 
-    const books = await searchBooks(topic);
+    const allBooks = await searchBooks(topic);
 
-    console.log(`✅ Books : ${books.length}`);
+    // Limit to Top 3
+    const books = allBooks.slice(0, 3);
 
-    if (!articles.length && !books.length) {
+    console.log(`✅ Books Found : ${books.length}`);
+
+    // ======================================
+    // Validation
+    // ======================================
+
+    if (articles.length === 0 && books.length === 0) {
       throw new Error("No research sources found.");
     }
 
@@ -77,7 +102,7 @@ const runResearchPipeline = async ({
     console.log("✅ AI Research Generated");
 
     // ======================================
-    // Metadata
+    // Search Metadata
     // ======================================
 
     const searchEnd = Date.now();
@@ -97,29 +122,53 @@ const runResearchPipeline = async ({
     };
 
     // ======================================
-    // Save
+    // Save Research
     // ======================================
 
+    console.log("\n💾 Saving Research...");
+
     const research = await Research.create({
+      // ======================================
+      // User
+      // ======================================
+      user: userId,
+
+      // ======================================
+      // Basic Information
+      // ======================================
       title,
       topic,
       category,
       language,
       difficulty,
 
+      // ======================================
+      // Status
+      // ======================================
       status: "completed",
 
+      // ======================================
+      // AI Output
+      // ======================================
       summary,
       keywords,
       report,
 
+      // ======================================
+      // Search Results
+      // ======================================
       articles,
       books,
 
+      // ======================================
+      // Citations
+      // ======================================
       sources: citations,
-
       citationStyle,
 
+      // ======================================
+      // Metadata
+      // ======================================
       searchMetadata,
 
       generatedBy: {
@@ -130,19 +179,28 @@ const runResearchPipeline = async ({
       processingTime,
     });
 
+    // ======================================
+    // Completed
+    // ======================================
+
     console.log("\n========================================");
-    console.log("🎉 PIPELINE COMPLETED");
+    console.log("🎉 AI RESEARCH PIPELINE COMPLETED");
     console.log("========================================");
 
-    console.log(`Articles : ${articles.length}`);
-    console.log(`Books    : ${books.length}`);
-    console.log(`Sources  : ${citations.length}`);
-    console.log(`Time     : ${processingTime} sec`);
+    console.table({
+      User: userId.toString(),
+      Articles: articles.length,
+      Books: books.length,
+      Citations: citations.length,
+      "Processing Time": `${processingTime}s`,
+    });
 
     return research;
+
   } catch (error) {
+
     console.error("\n========================================");
-    console.error("❌ PIPELINE FAILED");
+    console.error("❌ AI RESEARCH PIPELINE FAILED");
     console.error("========================================");
 
     console.error(error);
@@ -150,6 +208,7 @@ const runResearchPipeline = async ({
     throw new Error(
       `Research pipeline failed: ${error.message}`
     );
+
   }
 };
 
