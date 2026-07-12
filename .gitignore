@@ -1,0 +1,13 @@
+# Client
+Client/node_modules/
+Client/dist/
+Client/.env
+
+# Server
+Server/node_modules/
+Server/.env
+Server/keys/
+
+# General
+.DS_Store
+.vscode/
