@@ -1,4 +1,7 @@
 node_modules/
 .env
+.env.*
+!.env.example
 
-Server/keys/serviceAccountKey.json
+keys/
+keys/serviceAccountKey.json

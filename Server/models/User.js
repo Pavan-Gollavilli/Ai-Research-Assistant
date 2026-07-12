@@ -30,7 +30,6 @@ const userSchema = new mongoose.Schema(
 
     provider: {
       type: String,
-      enum: ["google", "password"],
       required: true,
     },
 
